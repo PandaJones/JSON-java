@@ -857,4 +857,85 @@ public class XML {
                         + ">" + string + "</" + tagName + ">";
 
     }
+    
+    public static JSONObject toJSONObject(Reader reader, JSONPointer path) {
+    	try {
+    		JSONObject subobject = new JSONObject();
+        	XMLTokener x = new XMLTokener(reader);
+        	String[] tags = path.toString().substring(1).split("/");
+        	if (tags.length == 0) {
+        		throw new Exception();
+        	}
+        	int i = 0;
+        	while (x.more()) {
+                x.skipPast("<");
+                if(x.more()) {
+                	XMLTokener y = x;
+                	if (i == (tags.length)) {
+            			parse(y, subobject, null, XMLParserConfiguration.ORIGINAL);
+                		break;
+                	}
+                	if (x.nextContent().equals(tags[i]+">")) {
+                		i++;
+                	}
+                }
+        	}
+        	return subobject;
+    	}catch(Exception e) {
+    		System.out.println("Error reading xml. XML is malformed or path is empty/wrong. Returning empty JSONObject");
+    		JSONObject error = new JSONObject();
+    		return error;
+    	}
+    }
+    public static JSONObject toJSONObject(Reader reader, JSONPointer path, JSONObject replacement) {
+    	try {
+    		JSONObject replaced = new JSONObject();
+        	XMLTokener x = new XMLTokener(reader);
+        	boolean done = false;
+        	boolean gotit = false;
+        	String[] tags = path.toString().substring(1).split("/");
+        	if (tags.length == 0) {
+        		throw new Exception();
+        	}
+        	String xml = "";
+        	int i = 0;
+    		while (x.more()) {
+                x.skipPast("<");
+                xml += "<";
+                if(x.more()) {
+                	if (i == tags.length) {
+                		String replaceme = toString(replacement);
+                		replaceme = replaceme.substring(1);
+                		//replaceme = replaceme.substring(0, replaceme.length()-1);
+                		xml += replaceme;
+                		done = true;
+                		i++;
+                	}
+                	if(!done) {
+                		xml += x.nextContent();
+                		if (xml.contains(tags[i])) {
+                    		i++;
+                    	}
+                	}
+                	else {
+                		String check = (String) x.nextContent();
+                		if (check.equals("/"+tags[tags.length-1]+">") && !gotit) {
+                			xml = xml.substring(0, xml.length()-1);
+                			xml += check;
+                			gotit = true;
+                		}
+                		else if (gotit) {
+                			xml+= check;
+                		}
+                	}
+                }
+        	}
+        	replaced = toJSONObject(xml);
+        	return replaced;
+    	}catch(Exception e) {
+    		System.out.println("Error reading xml. XML is malformed or path is empty/wrong. Returning empty JSONObject");
+    		JSONObject error = new JSONObject();
+    		return error;
+    	}
+    }
 }

@@ -44,6 +44,7 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONPointer;
 import org.json.JSONTokener;
 import org.json.XML;
 import org.json.XMLParserConfiguration;
@@ -1067,5 +1068,136 @@ public class XMLTest {
             });
             fail("Expected to be unable to modify the config");
         } catch (Exception ignored) { }
+    }
+    
+    @Test
+    public void Task2(){
+    	String xmlStr = "<PurchaseOrders>" //yea you have to make your own xmlStr so it can be placed into a reader
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "</PurchaseOrders>";
+        JSONPointer.Builder pathbuilder = new JSONPointer.Builder(); //building the path
+        pathbuilder.append("PurchaseOrders");  
+        pathbuilder.append("Array2"); //You can change this to get Array1's content, you just have to also change line 1092 to answer.put("stuff", "Hi guys");
+        JSONPointer path = pathbuilder.build();
+        Reader reader = new StringReader(xmlStr);
+        
+        JSONObject jsonObject = XML.toJSONObject(reader, path);
+        
+        JSONObject answer = new JSONObject(); //answer for the subobject
+        answer.put("stuff", "Hi gals");
+
+        assertTrue("jsonObject should equal the answer", answer.toString().equals(jsonObject.toString())); //checking if the String match
+    }
+    @Test
+    public void Task5(){
+    	String xmlStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "</PurchaseOrders>";
+    	JSONObject myjson = new JSONObject(); //you have to make your own jsonobject here
+        myjson.put("THISJSON", "HAS BEEN REPLACED");
+        JSONPointer.Builder pathbuilder = new JSONPointer.Builder();
+        pathbuilder.append("PurchaseOrders");
+        pathbuilder.append("Array1");
+        JSONPointer path = pathbuilder.build();
+        Reader reader = new StringReader(xmlStr);
+        
+        JSONObject jsonObject = XML.toJSONObject(reader, path, myjson);
+        String ansStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<THISJSON>HAS BEEN REPLACED</THISJSON>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "</PurchaseOrders>";
+        JSONObject answer = new JSONObject();
+        answer = XML.toJSONObject(ansStr);
+        assertTrue("jsonObject should equal the answer", answer.toString().equals(jsonObject.toString()));
+    }
+    @Test
+    public void Task2Error(){
+    	String xmlStr = "<PurchaseOrders>" //yea you have to make your own xmlStr so it can be placed into a reader
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>" 
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals <//stuff>"//oh look an extra /
+    			+ "  </Array2>"
+    			+ "</PurchaseOrders>";
+        JSONPointer.Builder pathbuilder = new JSONPointer.Builder(); //building the path
+        pathbuilder.append("PurchaseOrders");  
+        pathbuilder.append("Array2"); //You can change this to get Array1's content, you just have to also change line 1092 to answer.put("stuff", "Hi guys");
+        JSONPointer path = pathbuilder.build();
+        Reader reader = new StringReader(xmlStr);
+        JSONObject jsonObject = XML.toJSONObject(reader, path);
+    	assertTrue("jsonObject should be empty", jsonObject.isEmpty());
+    }
+    @Test
+    public void Task2ErrorPath(){
+    	String xmlStr = "<PurchaseOrders>" //yea you have to make your own xmlStr so it can be placed into a reader
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys <</stuff>" //oh look an extra <
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "</PurchaseOrders>";
+        JSONPointer.Builder pathbuilder = new JSONPointer.Builder(); //no path
+        //pathbuilder.append("OWDJOAJODJIWOA"); //feel free to uncomment this wrong path
+        JSONPointer path = pathbuilder.build();
+        Reader reader = new StringReader(xmlStr);
+        JSONObject jsonObject = XML.toJSONObject(reader, path);
+    	assertTrue("jsonObject should be empty", jsonObject.isEmpty());
+    }
+    @Test
+    public void Task5Error(){
+    	String xmlStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals <</stuff>" //another extra <
+    			+ "  </Array2>"
+    			+ "</PurchaseOrders>";
+    	JSONObject myjson = new JSONObject(); //you have to make your own jsonobject here
+        myjson.put("THISJSON", "HAS BEEN REPLACED");
+        JSONPointer.Builder pathbuilder = new JSONPointer.Builder();
+        pathbuilder.append("PurchaseOrders");
+        pathbuilder.append("Array1");
+        JSONPointer path = pathbuilder.build();
+        Reader reader = new StringReader(xmlStr);
+        
+        JSONObject jsonObject = XML.toJSONObject(reader, path, myjson);
+    	assertTrue("jsonObject should be empty", jsonObject.isEmpty());
+    }
+    @Test
+    public void Task5ErrorPath(){
+    	String xmlStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals <</stuff>" //another extra <
+    			+ "  </Array2>"
+    			+ "</PurchaseOrders>";
+    	JSONObject myjson = new JSONObject(); //you have to make your own jsonobject here
+        myjson.put("THISJSON", "HAS BEEN REPLACED");
+        JSONPointer.Builder pathbuilder = new JSONPointer.Builder(); //no path
+        //pathbuilder.append("OWDJOAJODJIWOA"); //feel free to uncomment this wrong path
+        JSONPointer path = pathbuilder.build();
+        Reader reader = new StringReader(xmlStr);
+        
+        JSONObject jsonObject = XML.toJSONObject(reader, path, myjson);
+    	assertTrue("jsonObject should be empty", jsonObject.isEmpty());
     }
 }
