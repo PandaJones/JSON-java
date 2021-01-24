@@ -1200,4 +1200,21 @@ public class XMLTest {
         JSONObject jsonObject = XML.toJSONObject(reader, path, myjson);
     	assertTrue("jsonObject should be empty", jsonObject.isEmpty());
     }
+    
+    @Test
+    public void Task2Array() {
+    	String xmlStr = "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>";
+        JSONPointer.Builder pathbuilder = new JSONPointer.Builder(); //building the path
+        pathbuilder.append("jo");  
+        pathbuilder.append("arr");
+        pathbuilder.append(1);
+        JSONPointer path = pathbuilder.build();
+        Reader reader = new StringReader(xmlStr);
+        
+        JSONObject jsonObject = XML.toJSONObject(reader, path);
+        JSONObject answer = (JSONObject) XML.toJSONObject(xmlStr).optQuery(path);
+        System.out.println(jsonObject.toString());
+        System.out.println(answer.toString());
+        assertTrue("jsonObject should equal the answer", answer.toString().equals(jsonObject.toString()));
+    }
 }

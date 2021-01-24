@@ -318,7 +318,7 @@ public class XML {
         } else if (token == SLASH) {
 
             // Close tag </
-
+        	
             token = x.nextToken();
             if (name == null) {
                 throw x.syntaxError("Mismatched close tag " + token);
@@ -857,6 +857,15 @@ public class XML {
                         + ">" + string + "</" + tagName + ">";
 
     }
+    public static boolean isnum(String thing) {
+    	try {
+    	    Integer.parseInt(thing);
+    	} catch (NumberFormatException e) {
+    	    return false;
+    	}
+    	return true;
+    }
+    
     
     public static JSONObject toJSONObject(Reader reader, JSONPointer path) {
     	try {
@@ -875,8 +884,27 @@ public class XML {
             			parse(y, subobject, null, XMLParserConfiguration.ORIGINAL);
                 		break;
                 	}
-                	if (x.nextContent().equals(tags[i]+">")) {
+                	if (isnum(tags[i])) {
+                		int count = 0;
+                		while(true) {
+                			if (count == Integer.parseInt(tags[i])) {
+                				break;
+                			}
+                			if (x.nextContent().equals(tags[i-1]+">")) {
+                				count++;
+                			}
+                		}
+                		x.nextContent();
                 		i++;
+                		if (i == (tags.length)) {
+                			parse(y, subobject, null, XMLParserConfiguration.ORIGINAL);
+                			break;
+                		}
+                	}
+                	else {
+                		if (x.nextToken().equals(tags[i])) {
+                    		i++;
+                    	}
                 	}
                 }
         	}
@@ -906,7 +934,6 @@ public class XML {
                 	if (i == tags.length) {
                 		String replaceme = toString(replacement);
                 		replaceme = replaceme.substring(1);
-                		//replaceme = replaceme.substring(0, replaceme.length()-1);
                 		xml += replaceme;
                 		done = true;
                 		i++;
