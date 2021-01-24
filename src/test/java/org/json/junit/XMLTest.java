@@ -1213,8 +1213,6 @@ public class XMLTest {
         
         JSONObject jsonObject = XML.toJSONObject(reader, path);
         JSONObject answer = (JSONObject) XML.toJSONObject(xmlStr).optQuery(path);
-        System.out.println(jsonObject.toString());
-        System.out.println(answer.toString());
         assertTrue("jsonObject should equal the answer", answer.toString().equals(jsonObject.toString()));
     }
 }
