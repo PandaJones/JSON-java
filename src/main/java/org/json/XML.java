@@ -894,7 +894,9 @@ public class XML {
                 				count++;
                 			}
                 		}
-                		x.nextContent();
+                		if (count != 0) {
+                			x.nextContent();
+                		}
                 		i++;
                 		if (i == (tags.length)) {
                 			parse(y, subobject, null, XMLParserConfiguration.ORIGINAL);
