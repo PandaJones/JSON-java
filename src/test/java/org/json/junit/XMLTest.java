@@ -47,6 +47,7 @@ import org.json.JSONObject;
 import org.json.JSONPointer;
 import org.json.JSONTokener;
 import org.json.XML;
+import org.json.XML.tranformer;
 import org.json.XMLParserConfiguration;
 import org.json.XMLXsiTypeConverter;
 import org.junit.Rule;
@@ -1214,5 +1215,46 @@ public class XMLTest {
         JSONObject jsonObject = XML.toJSONObject(reader, path);
         JSONObject answer = (JSONObject) XML.toJSONObject(xmlStr).optQuery(path);
         assertTrue("jsonObject should equal the answer", answer.toString().equals(jsonObject.toString()));
+    }
+    public class adder implements tranformer{
+    	public String run(String e) {
+    		String a = "swe262_"+e;
+    		return a;
+    	}
+    }
+    @Test
+    public void Milestone3Test1() {
+    	String xmlStr = "<PurchaseOrders>" //yea you have to make your own xmlStr so it can be placed into a reader
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "</PurchaseOrders>";
+    	String answerStr = "<swe262_PurchaseOrders>" //yea you have to make your own xmlStr so it can be placed into a reader
+    			+ "  <swe262_Array1>"
+    			+ "	<swe262_stuff>Hi guys </swe262_stuff>"
+    			+ "  </swe262_Array1>"
+    			+ "  <swe262_Array2>"
+    			+ "	<swe262_stuff>Hi gals </swe262_stuff>"
+    			+ "  </swe262_Array2>"
+    			+ "</swe262_PurchaseOrders>";
+    	Reader reader = new StringReader(xmlStr);
+    	
+    	JSONObject jsonObject = XML.toJSONObject(reader, new adder());
+    	JSONObject answer = XML.toJSONObject(answerStr);
+    	assertTrue("jsonObject should equal the answer", answer.toString().equals(jsonObject.toString()));
+    }
+    @Test
+    public void Milestone3ArrayTest() {
+    	String xmlStr = "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>";
+    	String answerStr = "<swe262_jo><swe262_arr><swe262_stuff>HI</swe262_stuff></swe262_arr><swe262_arr><swe262_stuff>BYE"
+    			+ "</swe262_stuff></swe262_arr><swe262_arr><swe262_stuff>HIAGAIN</swe262_stuff></swe262_arr></swe262_jo>";
+    	Reader reader = new StringReader(xmlStr);
+    	
+    	JSONObject jsonObject = XML.toJSONObject(reader, new adder());
+    	JSONObject answer = XML.toJSONObject(answerStr);
+    	assertTrue("jsonObject should equal the answer", answer.toString().equals(jsonObject.toString()));
     }
 }

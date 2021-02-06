@@ -31,7 +31,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Iterator;
 
-
 /**
  * This provides static methods to convert an XML text into a JSONObject, and to
  * covert a JSONObject into an XML text.
@@ -961,6 +960,37 @@ public class XML {
         	}
         	replaced = toJSONObject(xml);
         	return replaced;
+    	}catch(Exception e) {
+    		System.out.println("Error reading xml. XML is malformed or path is empty/wrong. Returning empty JSONObject");
+    		JSONObject error = new JSONObject();
+    		return error;
+    	}
+    }
+    public interface tranformer{
+    	String run(String e);
+    }
+    public static JSONObject toJSONObject(Reader reader, tranformer t) {
+    	try {
+    		JSONObject replaced = new JSONObject();
+    		XMLTokener x = new XMLTokener(reader);
+    		String xml = "";
+    		while (x.more()) {
+                x.skipPast("<");
+                xml += "<";
+                if(x.more()) {
+                	String b = x.nextContent().toString();
+                	if (b.charAt(0) == '/') {
+                		String a = b.substring(1);
+                		xml += "/";
+                		xml += t.run(b.replace("/", ""));
+                	}
+                	else {
+                		xml += t.run(b);
+                	}
+                }
+    		}
+    		replaced = toJSONObject(xml);
+    		return replaced;
     	}catch(Exception e) {
     		System.out.println("Error reading xml. XML is malformed or path is empty/wrong. Returning empty JSONObject");
     		JSONObject error = new JSONObject();
