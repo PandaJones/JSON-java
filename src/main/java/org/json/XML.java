@@ -980,12 +980,17 @@ public class XML {
                 if(x.more()) {
                 	String b = x.nextContent().toString();
                 	if (b.charAt(0) == '/') {
-                		String a = b.substring(1);
                 		xml += "/";
-                		xml += t.run(b.replace("/", ""));
+                		xml += t.run(b.substring(0,b.length()-1).replace("/", ""));
+                		xml += ">";
                 	}
                 	else {
-                		xml += t.run(b);
+                		String[] a = b.split(">",2);
+            			xml += t.run(a[0]);
+            			xml += ">";
+            			for (int i = 1; i < a.length; i++) {
+            				xml += a[i];
+            			}
                 	}
                 }
     		}
