@@ -995,6 +995,11 @@ public class XML {
                 }
     		}
     		replaced = toJSONObject(xml);
+    		String check = replaced.toString(); //this is really bad
+    		if (check.contains("\"content\":")) { //this only works if value has missing tags, parse will automatically append content as key 
+    			check = check.replace("\"content\":", "\""+t.run("content")+"\""+":"); //content may or may not be considered a key, either way
+        		replaced = new JSONObject(check); //back into a JSONObject
+    		}
     		return replaced;
     	}catch(Exception e) {
     		System.out.println("Error reading xml. XML is malformed or path is empty/wrong. Returning empty JSONObject");

@@ -54,6 +54,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.json.XMLTokener;
 
 /**
  * Tests for JSON-Java XML.java
