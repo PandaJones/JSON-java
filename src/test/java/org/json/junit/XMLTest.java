@@ -38,8 +38,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -1257,5 +1262,90 @@ public class XMLTest {
     	JSONObject jsonObject = XML.toJSONObject(reader, new adder());
     	JSONObject answer = XML.toJSONObject(answerStr);
     	assertTrue("jsonObject should equal the answer", answer.toString().equals(jsonObject.toString()));
+    }
+    @Test
+    public void Milestone4StreamTestforEach() { //This test shows that forEach is indeed streaming by asserting that it equal a index in the array (using iterator)
+    	String xmlStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "</PurchaseOrders>";
+    	ArrayList<String> a = new ArrayList<String>();
+    	a.add("{\"path\":\"PurchaseOrders.jo.arr[0].stuff\",\"value\":\"HI\",\"key\":\"stuff\"}");
+    	a.add("{\"path\":\"PurchaseOrders.jo.arr[1].stuff\",\"value\":\"BYE\",\"key\":\"stuff\"}");
+    	a.add("{\"path\":\"PurchaseOrders.jo.arr[2].stuff\",\"value\":\"HIAGAIN\",\"key\":\"stuff\"}");
+    	a.add("{\"path\":\"PurchaseOrders.Array1.stuff\",\"value\":\"Hi guys\",\"key\":\"stuff\"}");
+    	a.add("{\"path\":\"PurchaseOrders.Array2.stuff\",\"value\":\"Hi gals\",\"key\":\"stuff\"}");
+    	Iterator it = a.iterator();
+    	Reader reader = new StringReader(xmlStr);
+    	JSONObject jsonObject = XML.toJSONObject(reader);
+    	jsonObject.toStream().forEach(node -> {
+    	    if (((JSONObject) node).has("key"))
+    	        assertTrue(it.next().equals(node.toString()));
+    	  });
+    }
+    @Test
+    public void Milestone4StreamTestcollect() { //This test is just collecting all the JSONObject into a list, you do have to cast it
+    	String xmlStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "</PurchaseOrders>";
+    	String answer = "[{\"path\":\"PurchaseOrders.jo.arr[0].stuff\",\"value\":\"HI\",\"key\":\"stuff\"}, "
+    			+ "{\"path\":\"PurchaseOrders.jo.arr[1].stuff\",\"value\":\"BYE\",\"key\":\"stuff\"}, "
+    			+ "{\"path\":\"PurchaseOrders.jo.arr[2].stuff\",\"value\":\"HIAGAIN\",\"key\":\"stuff\"}, "
+    			+ "{\"path\":\"PurchaseOrders.Array1.stuff\",\"value\":\"Hi guys\",\"key\":\"stuff\"}, "
+    			+ "{\"path\":\"PurchaseOrders.Array2.stuff\",\"value\":\"Hi gals\",\"key\":\"stuff\"}]";
+    	Reader reader = new StringReader(xmlStr);
+    	JSONObject jsonObject = XML.toJSONObject(reader);
+    	ArrayList<String> a = (ArrayList<String>) jsonObject.toStream().collect(Collectors.toList());
+    	assertTrue(answer.equals(a.toString()));
+    }
+    @Test
+    public void Milestone4StreamTestmap() {
+    	String xmlStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "</PurchaseOrders>";
+    	Reader reader = new StringReader(xmlStr);
+    	JSONObject jsonObject = XML.toJSONObject(reader);
+    	ArrayList<String> a = (ArrayList<String>) jsonObject.toStream()
+    			.map(node -> ((JSONObject) node).get("key")).collect(Collectors.toList());
+    	ArrayList<String> b = new ArrayList<String>(Arrays.asList("stuff", "stuff", "stuff", "stuff", "stuff"));
+    	assertTrue(a.equals(b));
+    }
+    @Test
+    public void Milestone4StreamTestfilter() { //This test is filtering out nodes that have a path length of 4. So if a node went through 4 tags, it will be returned
+    	String xmlStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "</PurchaseOrders>";
+    	String answer = "[{\"path\":\"PurchaseOrders.jo.arr[0].stuff\",\"value\":\"HI\",\"key\":\"stuff\"}, "
+    			+ "{\"path\":\"PurchaseOrders.jo.arr[1].stuff\",\"value\":\"BYE\",\"key\":\"stuff\"}, "
+    			+ "{\"path\":\"PurchaseOrders.jo.arr[2].stuff\",\"value\":\"HIAGAIN\",\"key\":\"stuff\"}]";
+    	Reader reader = new StringReader(xmlStr);
+    	JSONObject jsonObject = XML.toJSONObject(reader);
+    	ArrayList<String> a = (ArrayList<String>) jsonObject.toStream()
+    			.filter(node -> ((String) ((JSONObject) node).get("path"))
+    					.split("\\.").length == 4).collect(Collectors.toList());
+    	assertTrue(answer.equals(a.toString()));
     }
 }

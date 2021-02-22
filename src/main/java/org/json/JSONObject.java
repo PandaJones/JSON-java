@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -45,7 +46,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A JSONObject is an unordered collection of name/value pairs. Its external
@@ -2644,5 +2651,66 @@ public class JSONObject {
         return new JSONException(
                 "JSONObject[" + quote(key) + "] is not a " + valueType + " (" + value + ")."
                 , cause);
+    }
+    public class Stream<T>{ //this is the meat of the new Stream, this Stream only support grabbing all leaf nodes from the JSONObject
+    	ArrayList<JSONObject> leaf;
+    	public Stream(JSONObject m){
+    		leaf = new ArrayList<>();
+    		getJSONObject("",m); //this will get all the leaf nodes ready to be stream
+    	}
+    	public java.util.stream.Stream filter(Predicate predicate){ //yea we are stream the ArrayList using java.util.stream.Stream
+    		return leaf.stream().filter(predicate);
+    	}
+    	public java.util.stream.Stream map(Function mapper) {
+			return leaf.stream().map(mapper);
+		}
+    	public void forEach(Consumer action) {
+    		leaf.stream().forEach(action);
+		}
+    	public Object collect(Collector collector) {
+    		return leaf.stream().collect(collector);
+    	}
+    	private void getAllLeaf(String nextKey, Object value) {
+    	    if (value instanceof JSONObject) {
+    	      getJSONObject(nextKey, (JSONObject)value);
+    	    } else if (value instanceof JSONArray) {
+    	      getJSONArray(nextKey, (JSONArray) value);
+    	    } else {
+    	      getLeaf(nextKey, value);
+    	    }    
+    	}
+    	private void getJSONObject(String nextKey, JSONObject json) {
+    	    Iterator it = json.keys();
+    	    while (it.hasNext()) {
+    	      String key = (String)it.next();
+    	      Object nest = json.get(key);
+    	      String childsKey = "";
+    	      if (nextKey.isEmpty()) {
+    	    	  childsKey = key;
+    	      }
+    	      else {
+    	    	  childsKey = nextKey + "." + key;
+    	      }
+    	      getAllLeaf(childsKey, nest);
+    	    }
+    	}
+    	private void getJSONArray(String nextKey, JSONArray json) {
+    	    for (int i = 0; i < json.length(); i++) {
+    	      Object value = json.get(i);
+    	      getAllLeaf(nextKey + "[" + i + "]", value);
+    	    }
+    	}
+    	private void getLeaf(String nextKey, Object obj) {
+    		String[] path1 = nextKey.split("\\.");
+    		JSONObject a = new JSONObject();
+    		a.put("key", path1[path1.length-1]);
+    		a.put("value", (String) obj);
+    		a.put("path", nextKey);
+    		leaf.add(a);
+    	}
+    }
+    public Stream<JSONObject> toStream() { //this is the toStream method which just initialize the Stream.
+    	Stream<JSONObject> b = new Stream<JSONObject>(this);
+    	return b;
     }
 }
