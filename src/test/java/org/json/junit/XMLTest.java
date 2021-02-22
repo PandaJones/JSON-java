@@ -1264,6 +1264,11 @@ public class XMLTest {
     	JSONObject answer = XML.toJSONObject(answerStr);
     	assertTrue("jsonObject should equal the answer", answer.toString().equals(jsonObject.toString()));
     }
+    
+    
+    //For Milestone 4, stream only streams leaf nodes. In addition, feel free to change the xml to your choosing or even getting a file
+    
+    
     @Test
     public void Milestone4StreamTestforEach() { //This test shows that forEach is indeed streaming by asserting that it equal a index in the array (using iterator)
     	String xmlStr = "<PurchaseOrders>"
@@ -1347,5 +1352,21 @@ public class XMLTest {
     	List<JSONObject> a = jsonObject.toStream()
     			.filter(node -> ((String) node.get("path")).split("\\.").length == 4).collect(Collectors.toList());
     	assertTrue(answer.equals(a.toString()));
+    }
+    @Test
+    public void MileStone4Prefix() { //this adds prefixes to each key
+    	String xmlStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "</PurchaseOrders>";
+    	Reader reader = new StringReader(xmlStr);
+    	JSONObject jsonObject = XML.toJSONObject(reader);
+    	jsonObject.toStream().forEach(node -> {node.put("key", "swe262_"+node.get("key"));
+    											assertTrue(node.get("key").equals("swe262_stuff"));});
     }
 }
