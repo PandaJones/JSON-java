@@ -2652,23 +2652,14 @@ public class JSONObject {
                 "JSONObject[" + quote(key) + "] is not a " + valueType + " (" + value + ")."
                 , cause);
     }
-    public class Stream<T>{ //this is the meat of the new Stream, this Stream only support grabbing all leaf nodes from the JSONObject
+    public class Stream{ //this is the meat of the new Stream, this Stream only support grabbing all leaf nodes from the JSONObject
     	ArrayList<JSONObject> leaf;
     	public Stream(JSONObject m){
     		leaf = new ArrayList<>();
     		getJSONObject("",m); //this will get all the leaf nodes ready to be stream
     	}
-    	public java.util.stream.Stream filter(Predicate predicate){ //yea we are stream the ArrayList using java.util.stream.Stream
-    		return leaf.stream().filter(predicate);
-    	}
-    	public java.util.stream.Stream map(Function mapper) {
-			return leaf.stream().map(mapper);
-		}
-    	public void forEach(Consumer action) {
-    		leaf.stream().forEach(action);
-		}
-    	public Object collect(Collector collector) {
-    		return leaf.stream().collect(collector);
+    	public ArrayList<JSONObject> returnList() {
+    		return leaf;
     	}
     	private void getAllLeaf(String nextKey, Object value) {
     	    if (value instanceof JSONObject) {
@@ -2709,8 +2700,9 @@ public class JSONObject {
     		leaf.add(a);
     	}
     }
-    public Stream<JSONObject> toStream() { //this is the toStream method which just initialize the Stream.
-    	Stream<JSONObject> b = new Stream<JSONObject>(this);
-    	return b;
+    public java.util.stream.Stream<JSONObject> toStream() { //this is the toStream method which just initialize the Stream.
+    	Stream b = new Stream(this);
+    	ArrayList<JSONObject> a = b.returnList();
+    	return a.stream(); //return a stream that you can now apply stream methods to.
     }
 }

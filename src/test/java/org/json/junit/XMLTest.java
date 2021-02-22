@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1306,7 +1307,7 @@ public class XMLTest {
     			+ "{\"path\":\"PurchaseOrders.Array2.stuff\",\"value\":\"Hi gals\",\"key\":\"stuff\"}]";
     	Reader reader = new StringReader(xmlStr);
     	JSONObject jsonObject = XML.toJSONObject(reader);
-    	ArrayList<String> a = (ArrayList<String>) jsonObject.toStream().collect(Collectors.toList());
+    	List<JSONObject> a = jsonObject.toStream().collect(Collectors.toList());
     	assertTrue(answer.equals(a.toString()));
     }
     @Test
@@ -1322,8 +1323,8 @@ public class XMLTest {
     			+ "</PurchaseOrders>";
     	Reader reader = new StringReader(xmlStr);
     	JSONObject jsonObject = XML.toJSONObject(reader);
-    	ArrayList<String> a = (ArrayList<String>) jsonObject.toStream()
-    			.map(node -> ((JSONObject) node).get("key")).collect(Collectors.toList());
+    	List<Object> a = jsonObject.toStream()
+    			.map(node -> node.get("key")).collect(Collectors.toList());
     	ArrayList<String> b = new ArrayList<String>(Arrays.asList("stuff", "stuff", "stuff", "stuff", "stuff"));
     	assertTrue(a.equals(b));
     }
@@ -1343,7 +1344,7 @@ public class XMLTest {
     			+ "{\"path\":\"PurchaseOrders.jo.arr[2].stuff\",\"value\":\"HIAGAIN\",\"key\":\"stuff\"}]";
     	Reader reader = new StringReader(xmlStr);
     	JSONObject jsonObject = XML.toJSONObject(reader);
-    	ArrayList<String> a = (ArrayList<String>) jsonObject.toStream()
+    	List<JSONObject> a = jsonObject.toStream()
     			.filter(node -> ((String) ((JSONObject) node).get("path"))
     					.split("\\.").length == 4).collect(Collectors.toList());
     	assertTrue(answer.equals(a.toString()));
