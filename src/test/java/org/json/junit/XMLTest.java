@@ -1345,8 +1345,7 @@ public class XMLTest {
     	Reader reader = new StringReader(xmlStr);
     	JSONObject jsonObject = XML.toJSONObject(reader);
     	List<JSONObject> a = jsonObject.toStream()
-    			.filter(node -> ((String) ((JSONObject) node).get("path"))
-    					.split("\\.").length == 4).collect(Collectors.toList());
+    			.filter(node -> ((String) node.get("path")).split("\\.").length == 4).collect(Collectors.toList());
     	assertTrue(answer.equals(a.toString()));
     }
 }
