@@ -38,8 +38,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -1412,5 +1414,52 @@ public class XMLTest {
     	Reader reader = new StringReader(xmlStr);
     	Object k = XML.toJSONObject(reader, new operation(), new errormsg());
     	assertTrue(k.equals("error"));
+    }
+    @Test
+    public void Milestone5async() { //Simulate threads so you know that it is async 
+    	String xmlStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "</PurchaseOrders>";
+    	String xmlStr2 = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "</PurchaseOrders>";
+    	Reader reader2 = new StringReader(xmlStr2);
+    	Reader reader = new StringReader(xmlStr);
+    	Reader reader3 = new StringReader(xmlStr);
+    	Thread t2 = new Thread() {
+    		public void run() {
+    			System.out.println(XML.toJSONObject(reader2, new operation(), new errormsg()));
+    		}
+    	};
+    	Thread t1 = new Thread() {
+    		public void run() {
+    			System.out.println(XML.toJSONObject(reader3, new operation(), new errormsg()));
+    		}
+    	};
+    	Thread t3 = new Thread() {
+    		public void run() {
+    			System.out.println(XML.toJSONObject(reader, new operation(), new errormsg()));
+    		}
+    	};
+    	t2.start();
+    	t1.start();
+    	t3.start();
+    	//if you look at the output the 2 smaller XML returns first then the big XML returns, despite the fact that the Big XML was
+    	//started first.
     }
 }

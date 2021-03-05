@@ -1018,7 +1018,7 @@ public class XML {
     	String run(Exception e);
     }
     public static class JSONFuture{ //the Future class that I referenced from https://www.baeldung.com/java-future
-    	private ExecutorService executor = Executors.newSingleThreadExecutor();
+    	private ExecutorService executor = Executors.newFixedThreadPool(2);
     	public Future<JSONObject> convert(Reader reader){
     		return executor.submit(() -> {
     			Thread.sleep(1000);
@@ -1034,8 +1034,8 @@ public class XML {
 //    		    Thread.sleep(300);
 //    		}
     		Object k = operation.run(future.get());
-    		System.out.println(k); //tells you the operation has been finished
-    		return k; //returns that Object
+    		//System.out.println(k); //tells you the operation has been finished
+    		return k; //returns that Object once finished
     	}catch(Exception e) {
     		System.out.println(errormsg.run(e)); //prints 
     		return "error";
