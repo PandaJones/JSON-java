@@ -53,6 +53,8 @@ import org.json.JSONObject;
 import org.json.JSONPointer;
 import org.json.JSONTokener;
 import org.json.XML;
+import org.json.XML.doonFuture;
+import org.json.XML.errorFuture;
 import org.json.XML.tranformer;
 import org.json.XMLParserConfiguration;
 import org.json.XMLXsiTypeConverter;
@@ -1368,5 +1370,47 @@ public class XMLTest {
     	JSONObject jsonObject = XML.toJSONObject(reader);
     	jsonObject.toStream().forEach(node -> {node.put("key", "swe262_"+node.get("key"));
     											assertTrue(node.get("key").equals("swe262_stuff"));});
+    }
+    public class operation implements doonFuture{ //the operation to do on the Future
+    	public Object run(JSONObject j) {
+    		Object h = j.toStream().map(node -> node.get("key")).collect(Collectors.toList());
+    		return h;
+    	}
+    }
+    public class errormsg implements errorFuture{ //the error message if error occurs
+		public String run(Exception e) {
+			return "Something went wrong: "+e;
+		}
+    }
+    @Test
+    public void MileStone5Test() {
+    	String xmlStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "</PurchaseOrders>";
+    	Reader reader = new StringReader(xmlStr);
+    	Object k = XML.toJSONObject(reader, new operation(), new errormsg());
+    	ArrayList<String> b = new ArrayList<String>(Arrays.asList("stuff", "stuff", "stuff", "stuff", "stuff"));
+    	assertTrue(k.equals(b));
+    }
+    @Test
+    public void MileStone5TestError() {
+    	String xmlStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "</PurchaseOrderss>"; //malformed tag
+    	Reader reader = new StringReader(xmlStr);
+    	Object k = XML.toJSONObject(reader, new operation(), new errormsg());
+    	assertTrue(k.equals("error"));
     }
 }

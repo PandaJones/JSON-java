@@ -30,6 +30,10 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Iterator;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * This provides static methods to convert an XML text into a JSONObject, and to
@@ -1005,6 +1009,36 @@ public class XML {
     		System.out.println("Error reading xml. XML is malformed or path is empty/wrong. Returning empty JSONObject");
     		JSONObject error = new JSONObject();
     		return error;
+    	}
+    }
+    public interface doonFuture{ //two interfaces for the 2 functions that the user will use
+    	Object run(JSONObject j);
+    }
+    public interface errorFuture{
+    	String run(Exception e);
+    }
+    public static class JSONFuture{ //the Future class that I referenced from https://www.baeldung.com/java-future
+    	private ExecutorService executor = Executors.newSingleThreadExecutor();
+    	public Future<JSONObject> convert(Reader reader){
+    		return executor.submit(() -> {
+    			Thread.sleep(1000);
+    			return XML.toJSONObject(reader);
+    		});
+    	}
+    }
+    public static Object toJSONObject(Reader reader, doonFuture operation, errorFuture errormsg) {
+    	try {
+    		Future<JSONObject> future = new JSONFuture().convert(reader);
+//    		while(!future.isDone()) {
+//    		    System.out.println("Calculating...");
+//    		    Thread.sleep(300);
+//    		}
+    		Object k = operation.run(future.get());
+    		System.out.println(k); //tells you the operation has been finished
+    		return k; //returns that Object
+    	}catch(Exception e) {
+    		System.out.println(errormsg.run(e)); //prints 
+    		return "error";
     	}
     }
 }
