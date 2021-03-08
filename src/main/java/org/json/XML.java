@@ -1018,10 +1018,10 @@ public class XML {
     	String run(Exception e);
     }
     public static class JSONFuture{ //the Future class that I referenced from https://www.baeldung.com/java-future
-    	private ExecutorService executor = Executors.newFixedThreadPool(2);
+    	private ExecutorService executor = Executors.newFixedThreadPool(1);
     	public Future<JSONObject> convert(Reader reader){
     		return executor.submit(() -> {
-    			Thread.sleep(1000);
+    			Thread.sleep(1);
     			return XML.toJSONObject(reader);
     		});
     	}
@@ -1040,5 +1040,9 @@ public class XML {
     		System.out.println(errormsg.run(e)); //prints 
     		return "error";
     	}
+    }
+    public static Future<JSONObject> toJSONObjectAsync(Reader reader){
+    	Future<JSONObject> future = new JSONFuture().convert(reader);
+    	return future;
     }
 }

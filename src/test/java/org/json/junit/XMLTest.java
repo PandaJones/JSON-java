@@ -42,10 +42,16 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1441,25 +1447,70 @@ public class XMLTest {
     	Reader reader2 = new StringReader(xmlStr2);
     	Reader reader = new StringReader(xmlStr);
     	Reader reader3 = new StringReader(xmlStr);
+    	List<Object> done = Collections.synchronizedList(new ArrayList<Object>());
     	Thread t2 = new Thread() {
     		public void run() {
-    			System.out.println(XML.toJSONObject(reader2, new operation(), new errormsg()));
+    			Object k = XML.toJSONObject(reader2, new operation(), new errormsg());
+    			done.add(k);
+    			System.out.println(k);
     		}
     	};
     	Thread t1 = new Thread() {
     		public void run() {
-    			System.out.println(XML.toJSONObject(reader3, new operation(), new errormsg()));
+    			Object k = XML.toJSONObject(reader3, new operation(), new errormsg());
+    			done.add(k);
+    			System.out.println(k);
     		}
     	};
     	Thread t3 = new Thread() {
     		public void run() {
-    			System.out.println(XML.toJSONObject(reader, new operation(), new errormsg()));
+    			Object k = XML.toJSONObject(reader, new operation(), new errormsg());
+    			done.add(k);
+    			System.out.println(k);
     		}
     	};
-    	t2.start();
-    	t1.start();
-    	t3.start();
+    	try {
+    		t2.start();
+        	t1.start();
+        	t3.start();
+        	System.out.println("Main Thread");
+        	t2.join();
+        	t1.join();
+        	t3.join();
+        	assertTrue(done.size() == 3); //small chance of it failing if I check the first Object is the small xml operation output
+    	}catch(Exception e) {				//so it is just going to make sure it has all 3.
+    		System.out.println(e);
+    	}
     	//if you look at the output the 2 smaller XML returns first then the big XML returns, despite the fact that the Big XML was
-    	//started first.
+    	//started first (Most of the time, rare chance of the big xml processing first). I also include a System.out.println 
+    	//to show that the main thread isn't blocked and can continue to doing whatever after running the method.
+    }
+    @Test
+    public void MileStone5AlternativeMethod() { //THis is the alternative method with no operation/error functions involved
+    	String xmlStr = "<PurchaseOrders>"
+    			+ "  <Array1>"
+    			+ "	<stuff>Hi guys </stuff>"
+    			+ "  </Array1>"
+    			+ "  <Array2>"
+    			+ "	<stuff>Hi gals </stuff>"
+    			+ "  </Array2>"
+    			+ "<jo><arr><stuff>HI</stuff></arr><arr><stuff>BYE</stuff></arr><arr><stuff>HIAGAIN</stuff></arr></jo>"
+    			+ "</PurchaseOrders>";
+    	Reader reader = new StringReader(xmlStr);
+    	Reader reader2 = new StringReader(xmlStr);
+    	Future<JSONObject> future = XML.toJSONObjectAsync(reader);
+    	JSONObject j = new JSONObject();
+    	try {
+    		while(!future.isDone()) { //As you can see, the main thread is waiting until the future is ready
+        		System.out.println("Waiting");
+        		Thread.sleep(1);
+        	}
+        	System.out.println("Done"); //once it is ready, you can finally get it
+    		j = future.get();
+    	}catch(Exception e) {
+    		System.out.println(e);
+    	}
+    	JSONObject answer = XML.toJSONObject(reader2);
+    	assertTrue(j.toString().equals(answer.toString()));
     }
 }
