@@ -1498,9 +1498,9 @@ public class XMLTest {
     			+ "</PurchaseOrders>";
     	Reader reader = new StringReader(xmlStr);
     	Reader reader2 = new StringReader(xmlStr);
-    	Future<JSONObject> future = XML.toJSONObjectAsync(reader);
     	JSONObject j = new JSONObject();
     	try {
+    		Future<JSONObject> future = XML.toJSONObjectAsync(reader);
     		while(!future.isDone()) { //As you can see, the main thread is waiting until the future is ready
         		System.out.println("Waiting");
         		Thread.sleep(1);
